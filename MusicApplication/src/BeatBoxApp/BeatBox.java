@@ -51,19 +51,25 @@ public class BeatBox {
 		Box buttonBox = new Box(BoxLayout.Y_AXIS); // vertical order
 
 		JButton start = new JButton("Start");
-		 start.addActionListener(new MyStartListener());
+		start.addActionListener(ActionEvent -> buildTrackAndStart());
 		buttonBox.add(start);
 
 		JButton stop = new JButton("Stop");
-		 stop.addActionListener(new MyStopListener());
+		stop.addActionListener(ActionEvent -> sequencer.stop());
 		buttonBox.add(stop);
 
 		JButton upTempo = new JButton("Tempo Up");
-		 upTempo.addActionListener(new MyUpTempoListener());
+		upTempo.addActionListener(ActionEvent -> {
+			float tempoFactor = sequencer.getTempoFactor();
+			sequencer.setTempoFactor((float) (tempoFactor * 1.03));
+		});
 		buttonBox.add(upTempo);
 
 		JButton downTempo = new JButton("Tempo Down");
-		 downTempo.addActionListener(new MyDownTempoListener());
+		downTempo.addActionListener(ActionEvent -> {
+			float tempoFactor = sequencer.getTempoFactor();
+			sequencer.setTempoFactor((float) (tempoFactor * 0.97));
+		});
 		buttonBox.add(downTempo);
 
 		Box nameBox = new Box(BoxLayout.Y_AXIS); // instruments
@@ -89,7 +95,7 @@ public class BeatBox {
 			checkboxList.add(c);
 			mainPanel.add(c);
 		}
-		
+
 		setUpMidi();
 
 		theFrame.setBounds(50, 50, 300, 300);
@@ -132,80 +138,45 @@ public class BeatBox {
 					trackList[j] = 0;
 				}
 			}
-				makeTracks(trackList);
-				
-				track.add(makeEvent(176, 1, 127, 0, 16));
-			}
-			
-			track.add(makeEvent(192, 9, 1, 0, 15));
-			try {
-				sequencer.setSequence(sequence);
-				sequencer.setLoopCount(sequencer.LOOP_CONTINUOUSLY);
-				sequencer.start();
-				sequencer.setTempoInBPM(120);
-			} catch (InvalidMidiDataException e) {
-				e.printStackTrace();
-			}
+			makeTracks(trackList);
+
+			track.add(makeEvent(176, 1, 127, 0, 16));
+		}
+
+		track.add(makeEvent(192, 9, 1, 0, 15));
+		try {
+			sequencer.setSequence(sequence);
+			sequencer.setLoopCount(sequencer.LOOP_CONTINUOUSLY);
+			sequencer.start();
+			sequencer.setTempoInBPM(120);
+		} catch (InvalidMidiDataException e) {
+			e.printStackTrace();
+		}
 	}
 
-			public class MyStartListener implements ActionListener {
+	public void makeTracks(int[] list) {
+		for (int i = 0; i < 16; i++) {
+			int key = list[i];
 
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					buildTrackAndStart();
-				}
-
+			if (key != 0) {
+				track.add(makeEvent(144, 9, key, 100, i));
+				track.add(makeEvent(128, 9, key, 100, i + 1));
 			}
-			public class MyStopListener implements ActionListener {
 
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					sequencer.stop();
-				}
-
-			}
-			public class MyUpTempoListener implements ActionListener {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					float tempoFactor = sequencer.getTempoFactor();
-					sequencer.setTempoFactor((float) (tempoFactor * 1.03));
-				}
-
-			}
-			public class MyDownTempoListener implements ActionListener {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					float tempoFactor = sequencer.getTempoFactor();
-					sequencer.setTempoFactor((float) (tempoFactor * 0.97));
-				}
-			}
-			
-			public void makeTracks(int[] list) {
-				for(int i=0; i<16; i++){
-					int key = list[i];
-					
-					if(key !=0){
-						track.add(makeEvent(144,9,key, 100, i));
-						track.add(makeEvent(128,9,key,100,i+1));
-					}
-					
-				}
-			}
-			
-			public MidiEvent makeEvent(int comd, int chan, int one, int two, int tick){
-				MidiEvent event = null;
-				
-				try{
-					ShortMessage a = new ShortMessage();
-					a.setMessage(comd,chan, one, two);
-					event = new MidiEvent(a, tick);
-					
-				} catch ( Exception e){
-					e.printStackTrace();
-				}
-				return event;
-			}
+		}
 	}
 
+	public MidiEvent makeEvent(int comd, int chan, int one, int two, int tick) {
+		MidiEvent event = null;
+
+		try {
+			ShortMessage a = new ShortMessage();
+			a.setMessage(comd, chan, one, two);
+			event = new MidiEvent(a, tick);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return event;
+	}
+}
