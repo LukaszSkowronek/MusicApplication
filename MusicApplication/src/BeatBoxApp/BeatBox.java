@@ -3,8 +3,14 @@ package BeatBoxApp;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.Label;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -57,6 +63,7 @@ public class BeatBox {
 		JButton stop = new JButton("Stop");
 		stop.addActionListener(ActionEvent -> sequencer.stop());
 		buttonBox.add(stop);
+		
 
 		JButton upTempo = new JButton("Tempo Up");
 		upTempo.addActionListener(ActionEvent -> {
@@ -71,6 +78,53 @@ public class BeatBox {
 			sequencer.setTempoFactor((float) (tempoFactor * 0.97));
 		});
 		buttonBox.add(downTempo);
+		
+		JButton serialize = new JButton("serialized");
+		buttonBox.add(serialize);
+		serialize.addActionListener(ActionEvent -> {
+			boolean[] checkBox = new boolean[256];
+			
+			for(int i = 0; i<256; i++){
+				JCheckBox check = (JCheckBox)checkboxList.get(i);
+				if(check.isSelected())
+					checkBox[i] = true;
+			}
+			try(ObjectOutputStream ob = new ObjectOutputStream(new FileOutputStream(new File("checkBox.ser")))){
+				ob.writeObject(checkBox);
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		});
+		JButton read = new JButton("read");
+		buttonBox.add(read);
+		read.addActionListener(ActionEvent -> {
+			boolean[] checkBoxState = null;
+			try(ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File("checkBox.ser")))){
+				checkBoxState = (boolean[]) in.readObject();
+				
+			} catch (FileNotFoundException e) {
+				System.out.println("Cant find the file");
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+			
+			
+			for(int i = 0; i<256; i++){
+				JCheckBox check = (JCheckBox)checkboxList.get(i);
+				if(checkBoxState[i])
+					check.setSelected(true);
+				else
+					check.setSelected(false);
+			}
+			
+			sequencer.stop();
+			buildTrackAndStart();
+		});
 
 		Box nameBox = new Box(BoxLayout.Y_AXIS); // instruments
 		for (int i = 0; i < 16; i++) {
