@@ -38,42 +38,45 @@ import javax.swing.event.ListSelectionEvent;
 public class BeatBox {
 
 	private final Logger logger = Logger.getLogger(BeatBox.class);
-	private final TreeMap<String, Integer> instrumentToMidiCode = new TreeMap<String, Integer>()
+	private final Map<String, Integer> instrumentToMidiCode = new TreeMap<String, Integer>()
 	{{
 		put("Base Drum", 35);
 		put("Closed Hi-Hat", 42);
 		put("Open Hi-Hat", 46);
-		put("kropeczki", 38);
-		put("kropeczki2", 38);
-		put("kropeczki3", 38);
-		put("kropeczki4", 38);
-		put("kropeczki5", 38);
-		put("kropeczki6", 38);
-		put("kropeczki7", 38);
-		put("kropeczki8", 38);
-		put("kropeczki9", 38);
-		put("kropeczki0", 38);
-		put("kropeczki10", 38);
-		put("kropeczki11", 38);
-		put("kropeczki12", 38);
+		put("Acoustic Snare", 38);
+		put("Crash Cymbal", 49);
+		put("Hand Clap", 39);
+		put("High Tom", 50);
+		put("Hi Bongo", 60);
+		put("Marcas", 70);
+		put("Whistel", 72);
+		put("Low Conga", 64);
+		put("Cowbell", 56);
+		put("Vibraslap", 58);
+		put("Low-mid Tom", 47);
+		put("High Agogo", 67);
+		put("Open Hi Conga", 63);
 	}};
 
 	private final int NUMBER_OF_INSTRUMENTS = instrumentToMidiCode.size();
+	private final int NOTE_ON = 144;
+	private final int NOTE_OFF = 128;
+	private final int CHANGE_INSTRUMENT = 192;
 	private final int NUMBER_OF_TICKS = 16;
 	private final int NUMBER_OF_CHECKBOXES = NUMBER_OF_TICKS * NUMBER_OF_TICKS;
 
 
-	JFrame theFrame;
-	JPanel mainPanel;
-	JList incomingList;
-	JTextField userMessage;
-	int nextNumber;
-	String userName;
-	ObjectInputStream in;
-	ObjectOutputStream out;
+	private JFrame theFrame;
+	private JPanel mainPanel;
+	private JList incomingList;
+	private JTextField userMessage;
+	private int nextNumber;
+	private String userName;
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
 
-	HashMap<String, boolean[]> otherSeqsMap = new HashMap<String, boolean[]>();
-	ArrayList<JCheckBox> checkboxList;
+	Map<String, boolean[]> otherSeqsMap = new HashMap<String, boolean[]>();
+	List<JCheckBox> checkboxList;
 	Vector<String> listVector = new Vector<String>();
 
 	Sequencer sequencer;
@@ -84,10 +87,6 @@ public class BeatBox {
 
 
 
-	String[] instrumentName = { "Base Drum", "Closed Hi-Hat", "Open Hi-Hat", "Acoustic Snare", "Crash Cymbal",
-			"Hand Clap", "High Tom", "Hi Bongo", "Marcas", "Whiistel", "Low Conga", "Cowbell", "Vibraslap",
-			"Low-mid Tom", "High Agogo", "Open Hi Conga" };
-	int[] instrument = { 35, 42, 46, 38, 49, 39, 50, 60, 70, 72, 64, 56, 58, 47, 67, 63 };
 
 	public static void main(String[] args) {
 		new BeatBox().startUp("lukasz");
@@ -95,8 +94,7 @@ public class BeatBox {
 
 	private void startUp(String name) {
 		userName = name;
-		try {
-			Socket sock = new Socket("127.0.0.1", 4242);
+		try(Socket sock = new Socket("127.0.0.1", 4242)) {
 			out = new ObjectOutputStream(sock.getOutputStream());
 			in = new ObjectInputStream(sock.getInputStream());
 			Thread remote = new Thread(new Runnable() {
@@ -277,7 +275,7 @@ public class BeatBox {
 			makeTracks(trackList);
 
 		}
-		track.add(makeEvent(192, 9, 1, 0, 15));
+		track.add(makeEvent(CHANGE_INSTRUMENT, 9, 1, 0, 15));
 		try {
 			sequencer.setSequence(sequence);
 			sequencer.setLoopCount(sequencer.LOOP_CONTINUOUSLY);
@@ -289,25 +287,25 @@ public class BeatBox {
 	}
 
 	public void makeTracks(List<Integer> trackList) {
-		Iterator it = trackList.iterator();
+		Iterator<Integer> it = trackList.iterator();
 		for (int i = 0; i < NUMBER_OF_TICKS; i++) {
 			Integer num = (Integer) it.next();
 
 			if (num != null) {
-				int numKey = num.intValue();
-				track.add(makeEvent(144, 9, numKey, 100, i));
-				track.add(makeEvent(128, 9, numKey, 100, i + 1));
+				int InstrumentType = num.intValue();
+				track.add(makeEvent(NOTE_ON, 9, InstrumentType, 100, i));
+				track.add(makeEvent(NOTE_OFF, 9, InstrumentType, 100, i + 1));
 			}
 		}
 	}
 
-	public MidiEvent makeEvent(int comd, int chan, int one, int two, int tick) {
+	public MidiEvent makeEvent(int messageType, int channel, int noteToPlay, int howHardToPlayANote, int whenTrigger) { //poprawwic
 		MidiEvent event = null;
 
 		try {
-			ShortMessage a = new ShortMessage();
-			a.setMessage(comd, chan, one, two);
-			event = new MidiEvent(a, tick);
+			ShortMessage messageToMidi = new ShortMessage();
+			messageToMidi.setMessage(messageType, channel, noteToPlay, howHardToPlayANote);
+			event = new MidiEvent(messageToMidi, whenTrigger);
 
 		} catch (Exception e) {
 			e.printStackTrace();
