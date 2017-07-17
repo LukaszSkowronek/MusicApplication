@@ -64,13 +64,14 @@ public class BeatBox {
 	private final int CHANGE_INSTRUMENT = 192;
 	private final int NUMBER_OF_TICKS = 16;
 	private final int NUMBER_OF_CHECKBOXES = NUMBER_OF_TICKS * NUMBER_OF_TICKS;
+	private int port = 4242;
+	private String ip = "127.0.0.1";
 
 
 	private JFrame theFrame;
 	private JPanel mainPanel;
 	private JList incomingList;
 	private JTextField userMessage;
-	private int nextNumber;
 	private String userName;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
@@ -84,17 +85,21 @@ public class BeatBox {
 	Sequence sequence;
 	Track track;
 
-
-
-
-
 	public static void main(String[] args) {
-		new BeatBox().startUp("lukasz");
+		new BeatBox().startUp(generateNick());
+	}
+	
+	private static String generateNick(){
+		String[] names = {"Andrzej", "Antek", "Eugenia", "Włodek", "Staszek"};
+		String name = names[(int) (Math.random()*4)];
+		return name;
+		
 	}
 
 	private void startUp(String name) {
 		userName = name;
-		try(Socket sock = new Socket("127.0.0.1", 4242)) {
+		try {
+			Socket sock = new Socket(ip, port);
 			out = new ObjectOutputStream(sock.getOutputStream());
 			in = new ObjectInputStream(sock.getInputStream());
 			Thread remote = new Thread(new Runnable() {
@@ -167,7 +172,7 @@ public class BeatBox {
 			}
 
 			try {
-				out.writeObject(userName + nextNumber++ + ": " + userMessage.getText());
+				out.writeObject(userName + ": " + userMessage.getText());
 				out.writeObject(checkboxState);
 			} catch (Exception ex) {
 				logger.debug("can't send to the server");

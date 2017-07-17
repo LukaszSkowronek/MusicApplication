@@ -23,7 +23,8 @@ public class MusicServer {
 	public void go() {
 		clientOutputStreams = new ArrayList();
 
-		try(ServerSocket serverSocket = new ServerSocket(4242)){ 
+		try{ 
+			ServerSocket serverSocket = new ServerSocket(4242);
 
 			while (true) {
 				Socket clientSocket = serverSocket.accept();
