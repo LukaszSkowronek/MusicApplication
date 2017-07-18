@@ -4,15 +4,19 @@ package BeatBoxApp;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.Label;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.*;
-import org.apache.log4j.Logger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;
@@ -30,10 +34,14 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
+
+import org.apache.log4j.Logger;
 
 public class BeatBox {
 
@@ -65,13 +73,13 @@ public class BeatBox {
 	private final int NUMBER_OF_TICKS = 16;
 	private final int NUMBER_OF_CHECKBOXES = NUMBER_OF_TICKS * NUMBER_OF_TICKS;
 	private int port = 4242;
-	private String ip = "127.0.0.1";
+	private String ip = "89.67.107.241";
 
 
 	private JFrame theFrame;
 	private JPanel mainPanel;
 	private JList incomingList;
-	private JTextField userMessage;
+	private JTextArea userMessage;
 	private String userName;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
@@ -91,7 +99,7 @@ public class BeatBox {
 	
 	private static String generateNick(){
 		String[] names = {"Andrzej", "Antek", "Eugenia", "Włodek", "Staszek"};
-		String name = names[(int) (Math.random()*4)];
+		String name = names[(int) (Math.random()*5)];
 		return name;
 		
 	}
@@ -142,7 +150,7 @@ public class BeatBox {
 		background.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 		checkboxList = new ArrayList<JCheckBox>();
-		Box buttonBox = new Box(BoxLayout.Y_AXIS); // vertical order
+		Box buttonBox = new Box(BoxLayout.PAGE_AXIS); // vertical order
 
 		ActionListener startAction = ActionEvent -> buildTrackAndStart();
 		addButton(new JButton("Start"), startAction, buttonBox);
@@ -183,10 +191,14 @@ public class BeatBox {
 		};
 		addButton(new JButton("Send"), sendAction, buttonBox);
 
-		userMessage = new JTextField();
-		buttonBox.add(userMessage);
+		userMessage = new JTextArea(5,20);
+		userMessage.setWrapStyleWord(true);
+		userMessage.setLineWrap(true);
+		JScrollPane scrollerTextArea = new JScrollPane(userMessage);
+		buttonBox.add(scrollerTextArea);
 
 		incomingList = new JList();
+		incomingList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		incomingList.addListSelectionListener((ListSelectionEvent le) -> {
 			if (!le.getValueIsAdjusting()) {
 				String selected = (String) incomingList.getSelectedValue();
@@ -198,8 +210,8 @@ public class BeatBox {
 				}
 			}
 		});
-		incomingList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		JScrollPane theList = new JScrollPane(incomingList);
+		JScrollBar scrollDwon = theList.getVerticalScrollBar();
 		buttonBox.add(theList);
 		incomingList.setListData(listVector);
 
@@ -225,7 +237,7 @@ public class BeatBox {
 			checkboxList.add(c);
 			mainPanel.add(c);
 		}
-		theFrame.setBounds(50, 50, 300, 300);
+		theFrame.setBounds(50, 50, 400, 400);
 		theFrame.pack();
 		theFrame.setVisible(true);
 		theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
