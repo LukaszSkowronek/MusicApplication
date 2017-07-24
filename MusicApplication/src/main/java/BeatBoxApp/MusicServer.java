@@ -36,10 +36,8 @@ public class MusicServer {
 				
 				System.out.println("got a connection");
 			}
-		}
-					
+		} 
 			catch (IOException e) {
-				System.out.println("In go method");
 			e.printStackTrace();
 		}
 	
@@ -55,7 +53,6 @@ public class MusicServer {
 				out.writeObject(one);
 				out.writeObject(two);
 			} catch (Exception ex) {
-				System.out.println("In broadcast method");
 				ex.getMessage();
 			}
 		}
@@ -72,8 +69,6 @@ public class MusicServer {
 				in = new ObjectInputStream(sock.getInputStream());
 
 			} catch (Exception ex) {
-				System.out.println("In ClientHandler class");
-
 				ex.printStackTrace();
 			}
 		}
@@ -85,12 +80,10 @@ public class MusicServer {
 			try {
 				while ((o1 = in.readObject()) != null) {
 					o2 = in.readObject();
-					System.out.println("read two object");
 					broadcast(o1, o2);
 				}
 			} catch (Exception ex) {
 				
-				System.out.println("In run method");
 				ex.printStackTrace();
 			}
 

@@ -98,7 +98,7 @@ public class BeatBox {
 	}
 	
 	private static String generateNick(){
-		String[] names = {"Andrzej", "Antek", "Eugenia", "Włodek", "Staszek"};
+		String[] names = {"Andrzej", "Adam", "Ania", "Ewa", "Dominik"};
 		String name = names[(int) (Math.random()*5)];
 		return name;
 		
@@ -210,6 +210,7 @@ public class BeatBox {
 				}
 			}
 		});
+		
 		JScrollPane theList = new JScrollPane(incomingList);
 		JScrollBar scrollDwon = theList.getVerticalScrollBar();
 		buttonBox.add(theList);
